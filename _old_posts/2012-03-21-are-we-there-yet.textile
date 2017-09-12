@@ -1,0 +1,54 @@
+Peter "wrote a blog post":http://www.osgi.org/blog/2012/03/coordinator.html yesterday about the OSGi Coordinator service, which is new in the R4.3 Compendium. I wanted to give a more concrete example of how it is used.
+
+Sometimes we want to perform an expensive operation after a bunch of things have changed. For example, in the writable OBR repositories used by "Bndtools":http://bndtools.org/ we need to regenerate the index XML file after the user deploys a new resource into the repository. However, what if the user is deploying a hundred resources? It would be wasteful to regenerate the index after each of those deployments, because 99 times out of the hundred we will throw away the result.
+
+The Coordinator service is therefore used as a way of chunking operations. When deploying a file to the repository, we check if a coordination is ongoing; if one is, then we join it and defer the regeneration of the index. Otherwise, we just regenerate the index immediately.
+
+Here is the abbreviated code for @put()@, i.e. the method that does the deployment:
+
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="n">File</span> <span class="nf">put</span><span class="p">(</span><span class="n">Jar</span> <span class="n">bundle</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+	<span class="n">File</span> <span class="n">newFile</span> <span class="o">=</span> <span class="n">storageRepo</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">bundle</span><span class="o">);</span>
+	<span class="n">newFilesInCoordination</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">newFile</span><span class="o">);</span>
+
+	<span class="k">if</span> <span class="o">(</span><span class="n">coordinator</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="o">!</span><span class="n">coordinator</span><span class="o">.</span><span class="na">addParticipant</span><span class="o">(</span><span class="k">this</span><span class="o">))</span> <span class="o">{</span>
+		<span class="n">finishPut</span><span class="o">();</span>
+	<span class="o">}</span>
+	<span class="k">return</span> <span class="n">newFile</span><span class="o">;</span>
+<span class="o">}</span></code></pre></figure>
+
+
+When the coordinator service exists AND there is a current coordination, indicated by @addParticipant@ returning @true@, we simply begin the put operation and remember the file that we have created in the context of this coordination. However when there is no coordinator or current coordination, we both begin and immediately finish the put operation. The @finishPut@ method looks like this:
+
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">private</span> <span class="kt">void</span> <span class="nf">finishPut</span><span class="p">(</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+	<span class="n">regenerateIndex</span><span class="o">();</span>
+	<span class="n">newFilesInCoordination</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+<span class="o">}</span></code></pre></figure>
+
+
+In order to join the coordination we have to implement the @Participant@ interface, which has two methods @ended@ and @failed@. The @ended@ method is very simple, we just call @finishPut@:
+
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kt">void</span> <span class="nf">ended</span><span class="p">(</span><span class="n">Coordination</span> <span class="n">coordination</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+	<span class="n">finishPut</span><span class="o">();</span>
+<span class="o">}</span></code></pre></figure>
+
+
+In the @failed@ method we clean up the changes that we started to make. The repository will be back in the state it was in before the @put@ method was called:
+
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kt">void</span> <span class="nf">failed</span><span class="p">(</span><span class="n">Coordination</span> <span class="n">coordination</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+	<span class="k">for</span> <span class="o">(</span><span class="n">File</span> <span class="n">file</span> <span class="o">:</span> <span class="n">newFilesInCoordination</span><span class="o">)</span> <span class="o">{</span>
+		<span class="n">file</span><span class="o">.</span><span class="na">delete</span><span class="o">();</span>
+		<span class="c1">// omitted some extra error handling and logging here</span>
+	<span class="o">}</span>
+	<span class="n">newFilesInCoordination</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+<span class="o">}</span></code></pre></figure>
+
+	
+The thing I like about Coordinator is that it provides a very useful optimisation, but things can still work without it. In this case, when there is no Coordinator service available the repository regenerates the index on every @put@... which is exactly the behaviour that it had before I added Coordination support. Simply by adding a Coordinator bundle I can improve the performance of bulk repository updates.
+
+There is a Coordinator implementation "available in Equinox 3.8M6":http://download.eclipse.org/equinox/drops/S-3.8M6-201203141800/download.php?dropFile=org.eclipse.equinox.coordinator_1.1.0.v20120219-1616.jar. As far as I know Felix does not have its own implementation yet, but the Equinox Coordinator works fine on Felix in my testing.
+
+Incidentally, the use-cases for the Coordinator may remind you of the archetypal chunking problem in OSGi: when should the framework resolve bundles after a series of install, update and uninstall operations? Bundle resolution is not merely expensive but may actually produce spurious errors if done at inappropriate times, so the OSGi framework has always had the ability to chunk these operations: we call @FrameworkWiring.refreshBundles@ method (or @PackageAdmin.refreshPackages()@ prior to R4.3) to signal when we are done. The Coordinator service generalises this idea to make it available for our own applications.

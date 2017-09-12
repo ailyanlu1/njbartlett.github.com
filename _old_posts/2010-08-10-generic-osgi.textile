@@ -1,0 +1,37 @@
+The next version of the OSGi specification — Release 4.3 — will finally support Java Generics. Neither the specification nor the RFC working document are publicly available yet, but the new API has recently been <a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=322007">checked into</a> Eclipse Equinox for all to see.
+
+The most noticeable changes are to do with services, naturally. Both the @ServiceReference@ and @ServiceRegistration@ classes now have a single parameter for the service type, and there are new methods on @BundleContext@ that take @Class<S>@ to produce objects of those types. These new methods augment the old String-based methods that now return @ServiceReference<?>@ and @ServiceRegistration<?>@.
+	
+But the biggest single set of changes is on the @ServiceTracker@ class, which now takes *two* type parameters, @S@ and @T@, where @S@ is the type of service being tracked and @T@ is the type of objects being produced.
+
+This split has always been an important aspect of @ServiceTracker@, but it was not obvious before. When a tracker is used in its default form (i.e. without overriding or customising) the two type parameters are the same: we track a service of type @S@ and then typically call @getService()@ to get the current instance of type @S@. But the call to @getService()@ in fact gives us whatever the tracker's @addingService()@ method returns, and we can override that.
+
+So in a sense, @ServiceTracker@ is a *transformer* for services.
+
+For example, the first code sample in my <a href="/2010/08/05/when-servicetrackers-trump-ds.html">previous post</a> was a @ServiceTracker@ that transformed a service of type @IA@ into a @ServiceRegistration<IC>@... but you would have had to read the code very carefully to realise that. The @ServiceRegistration@ type wasn't even mentioned in the @addingService()@ method, so you needed to know that was the return type of @registerService()@.
+
+Here is what the same code will look like in OSGi R4.3 (N.B. I haven't actually compiled and tested this, but it should work):
+	
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ForeachA</span>
+             <span class="kd">extends</span> <span class="n">ServiceTracker</span><span class="o">&lt;</span><span class="n">IA</span><span class="o">,</span> <span class="n">ServiceRegistration</span><span class="o">&lt;</span><span class="n">IC</span><span class="o">&gt;&gt;</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="n">ForeachA</span><span class="o">(</span><span class="n">BundleContext</span> <span class="n">ctx</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="n">ctx</span><span class="o">,</span> <span class="n">IA</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">ServiceRegistration</span><span class="o">&lt;</span><span class="n">IC</span><span class="o">&gt;</span> <span class="n">addingService</span><span class="o">(</span>
+	                               <span class="n">ServiceReference</span><span class="o">&lt;</span><span class="n">IA</span><span class="o">&gt;</span> <span class="n">ref</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">IA</span> <span class="n">a</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getService</span><span class="o">(</span><span class="n">ref</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">context</span><span class="o">.</span><span class="na">registerService</span><span class="o">(</span><span class="n">IC</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="k">new</span> <span class="n">C</span><span class="o">(</span><span class="n">a</span><span class="o">),</span> <span class="kc">null</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">removedService</span><span class="o">(</span><span class="n">ServiceReference</span><span class="o">&lt;</span><span class="n">IA</span><span class="o">&gt;</span> <span class="n">ref</span><span class="o">,</span>
+                               <span class="n">ServiceRegistration</span><span class="o">&lt;</span><span class="n">IC</span><span class="o">&gt;</span> <span class="n">reg</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">reg</span><span class="o">.</span><span class="na">unregister</span><span class="o">();</span>
+        <span class="n">context</span><span class="o">.</span><span class="na">ungetService</span><span class="o">(</span><span class="n">ref</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+Unfortunately this a little bit more verbose than last time but it is safer due to the lack of casts, and more importantly the purpose of the class is clearly stated on the first line, thanks to the type parameters.
