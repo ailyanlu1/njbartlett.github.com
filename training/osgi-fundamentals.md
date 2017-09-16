@@ -4,7 +4,8 @@ title: Fundamentals of OSGi
 breadcrumbs: [ {url: /training.html, title: Training} ]
 ---
 
-h2. Fundamentals of OSGi -- Training
+Fundamentals of OSGi -- Training
+--------------------------------
 
 This 2-day workshop covers the fundamentals of developing for OSGi, the Dynamic Module System for Java, and using OSGi's fine-grained services to produce highly decoupled and reusable software components.
 
@@ -20,111 +21,115 @@ By the end of the "Fundamentals" course you will be aware of most of the core pr
 
 The course is very practical and comprises hands-on programming exercises throughout.
 
-h2. Who Is This Course For?
+Who Is This Course For?
+-----------------------
 
 If you are a Java developer interested in building highly modular, extensible applications using OSGi then this course is for you.
 
-h2. Course Prerequisites
+Course Prerequisites
+--------------------
 
 To benefit from this course you should be a competent Java developer or hands-on technical architect and you will need to have a good understanding of the core Java APIs. Some experience with using a build tool such as ANT and an IDE such as Eclipse will be useful, but not essential.
 
-h2. Course Labs & Exercises
+Course Labs & Exercises
+-----------------------
 
 30% Labs, 70% Presentation
 
-h2. Detailed Programme
+Detailed Programme
+------------------
 
-h4. BASICS
+#### BASICS
 
-h4. The Challenge of Modularity
+#### The Challenge of Modularity
 
-* The State of the Art in Standard Java
-* "JAR Hell"
-* What Is a Module?
+-   The State of the Art in Standard Java
+-   "JAR Hell"
+-   What Is a Module?
 
-h4. OSGi Bundles
+#### OSGi Bundles
 
-* Nuts and Bolts: What Does a Bundle Look Like?
-* Building our First Bundle
-* Exporting and Importing
-* Keeping Internals Hidden
+-   Nuts and Bolts: What Does a Bundle Look Like?
+-   Building our First Bundle
+-   Exporting and Importing
+-   Keeping Internals Hidden
 
-h4. OSGi Implementations
+#### OSGi Implementations
 
-* Overview of Equinox, Knopflerfish and Felix
-* Getting Equinox
-* Launching Equinox
-* Using the OSGi Console
-* Installing, Updating and Uninstalling Bundles
-* Starting and Stopping Bundles
+-   Overview of Equinox, Knopflerfish and Felix
+-   Getting Equinox
+-   Launching Equinox
+-   Using the OSGi Console
+-   Installing, Updating and Uninstalling Bundles
+-   Starting and Stopping Bundles
 
-h4. Dependencies and Versions Management
+#### Dependencies and Versions Management
 
-* Importing Packages vs Requiring Bundles
-* Versioning of Bundles and Packages
-* Versioning of Imports/Requires
+-   Importing Packages vs Requiring Bundles
+-   Versioning of Bundles and Packages
+-   Versioning of Imports/Requires
 
-h4. SERVICES
+#### SERVICES
 
-h4. Introduction to Services
+#### Introduction to Services
 
-* Late Binding in Java
-* Dependency Injection
-* Dynamic Dependency Injection
-* Declarative Services
-* Component Lifecycle
-* Laziness
-* Service Dependencies
-* Cardinality and Dynamics
-* Configurable Components
- 
-h4. The Whiteboard Pattern
+-   Late Binding in Java
+-   Dependency Injection
+-   Dynamic Dependency Injection
+-   Declarative Services
+-   Component Lifecycle
+-   Laziness
+-   Service Dependencies
+-   Cardinality and Dynamics
+-   Configurable Components
 
-* Review of the Classic Observer Pattern
-* Problems with the Observer Pattern
-* Fixing the Observer Pattern
-* Overview of the Whiteboard Pattern
-* Registering Listeners
-* Sending Events
+#### The Whiteboard Pattern
 
-h4. OSGi IN PRACTICE
+-   Review of the Classic Observer Pattern
+-   Problems with the Observer Pattern
+-   Fixing the Observer Pattern
+-   Overview of the Whiteboard Pattern
+-   Registering Listeners
+-   Sending Events
 
-h4. Building OSGi Bundles
+#### OSGi IN PRACTICE
 
-* Review of Approaches to Building Bundles
-* How BND Works
-* Using BND with Maven
-* Eclipse PDE
+#### Building OSGi Bundles
 
-h4. Testing Bundles
+-   Review of Approaches to Building Bundles
+-   How BND Works
+-   Using BND with Maven
+-   Eclipse PDE
 
-* Unit Testing with JUnit
-* System Testing
-* Testing Frameworks
+#### Testing Bundles
 
-h4. Building Applications
+-   Unit Testing with JUnit
+-   System Testing
+-   Testing Frameworks
 
-* What is an Application?
-* Managing and Configuring OSGi Applications
-* Managing Versions and Evolving APIs
-* Bundle Repositories
-* Managing Bundle States
-* Start Levels
+#### Building Applications
 
-h4. ADVANCED TOPICS
+-   What is an Application?
+-   Managing and Configuring OSGi Applications
+-   Managing Versions and Evolving APIs
+-   Bundle Repositories
+-   Managing Bundle States
+-   Start Levels
 
-h4. Alternative Component Frameworks
+#### ADVANCED TOPICS
 
-* Blueprint/Spring Dynamic Modules
-* Google Guice + Peaberry
-* Apache iPOJO
-* Component Framework Interoperability
+#### Alternative Component Frameworks
 
-h4. Remote Services and Enterprise OSGi
+-   Blueprint/Spring Dynamic Modules
+-   Google Guice + Peaberry
+-   Apache iPOJO
+-   Component Framework Interoperability
 
-* Overview of Remote Services/D-OSGi
-* Distribution Providers
-* Discovery Providers
-* Enterprise OSGi Motivation: Goals and non-Goals
-* Overview of Enterprise OSGi Services
-* OSGi in the Cloud
+#### Remote Services and Enterprise OSGi
+
+-   Overview of Remote Services/D-OSGi
+-   Distribution Providers
+-   Discovery Providers
+-   Enterprise OSGi Motivation: Goals and non-Goals
+-   Overview of Enterprise OSGi Services
+-   OSGi in the Cloud
